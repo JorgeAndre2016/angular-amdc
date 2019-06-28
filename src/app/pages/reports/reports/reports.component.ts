@@ -17,7 +17,7 @@ export class ReportsComponent implements OnInit {
 
   expenseTotal = 0;
   revenueTotal = 0;
-  balance = 0;
+  balanceTotal = 0;
 
   expenseChartData: any;
   revenueChartData: any;
@@ -47,7 +47,7 @@ export class ReportsComponent implements OnInit {
       });
   }
 
-  generateReport() {
+  public generateReports() {
     const month = this.month.nativeElement.value;
     const year = this.year.nativeElement.value;
 
@@ -77,17 +77,22 @@ export class ReportsComponent implements OnInit {
       }
     });
 
-    this.expenseTotal = currencyFormatter.formate(expenseTotal, { code: 'BRL'});
-    this.revenueTotal = currencyFormatter.formate(revenueTotal, { code: 'BRL'});
-    this.balance = currencyFormatter.formate(revenueTotal - expenseTotal, { code: 'BRL'});
+    this.expenseTotal = currencyFormatter.format(expenseTotal, { code: 'BRL'});
+    this.revenueTotal = currencyFormatter.format(revenueTotal, { code: 'BRL'});
+    this.balanceTotal = currencyFormatter.format(revenueTotal - expenseTotal, { code: 'BRL'});
   }
 
-  private setChartData(): void {
+  private setChartData() {
+    this.revenueChartData = this.getChartData('revenue', 'Gráfico de Receitas', '#9ccc65');
+    this.expenseChartData = this.getChartData('expense', 'Gráfico de Despesas', '#e03131');
+  }
+
+  private getChartData(entryType: string, title: string, color: string) {
     const chartData = [];
 
     this.categories.forEach((category) => {
       const filteredEntries = this.entries.filter(
-        entry => (entry.categoryId === category.id) && (entry.type === 'revenue')
+        entry => (entry.categoryId === category.id) && (entry.type === entryType)
       );
 
       if (filteredEntries.length > 0) {
@@ -102,13 +107,13 @@ export class ReportsComponent implements OnInit {
       }
     });
 
-    this.revenueChartData = {
+    return {
       labels: chartData.map(item => item.categoryName),
       datasets: [{
-        label: 'Gráfico de Receitas',
-        backgroundColor: '#9ccc65',
+        label: title,
+        backgroundColor: color,
         data: chartData.map(item => item.totalAmount)
       }]
-    }
+    };
   }
 }
